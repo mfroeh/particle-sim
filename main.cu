@@ -222,6 +222,8 @@ int main(int argc, char *argv[])
         {
             delete image;
             image = new Pixel[width * height];
+            prevWidth = width;
+            prevHeight = height;
         }
 
         cudaMemcpy(devParticles, particles.data(), sizeof(Particle) * particleCount, cudaMemcpyHostToDevice);

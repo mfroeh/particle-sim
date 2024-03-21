@@ -131,7 +131,7 @@ __global__ void updatePosition(Particle *particles, size_t particleCount, double
     me.y += me.velY;
 }
 
-void draw(vector<Particle> const &particles, Pixel *image, int width, int height)
+void draw(vector<Particle> const &particles, vector<Pixel>& image, int width, int height)
 {
     for (size_t i{}; i < height; ++i)
     {
@@ -185,9 +185,13 @@ int main(int argc, char *argv[])
     // particles
     uniform = uniform_real_distribution<double>{0, 1};
     size_t particleCount{4 * 1024};
-    if (argc >= 3)
+    if (argc >= 3) {
         particleCount = stoi(argv[2]);
-    assert(particleCount % 1024 == 0);
+        if (particleCount % 1024 != 0) {
+            cerr << "Particle count must be multiple of 1024" << endl;
+            exit(1);
+        }
+    }
     vector<Particle> particles{particleCount};
     for (size_t i{}; i < particleCount; ++i)
     {
@@ -210,7 +214,7 @@ int main(int argc, char *argv[])
     }
 
     int width{0}, height{0};
-    Pixel *image = new Pixel[1];
+    vector<Pixel> image{};
     unsigned frames = 0;
     double prevTime = glfwGetTime();
     while (!glfwWindowShouldClose(window))
@@ -220,8 +224,7 @@ int main(int argc, char *argv[])
         glfwGetFramebufferSize(window, &width, &height);
         if (width != prevWidth || height != prevHeight)
         {
-            delete image;
-            image = new Pixel[width * height];
+            image.resize(width * height);
             prevWidth = width;
             prevHeight = height;
         }
@@ -240,7 +243,7 @@ int main(int argc, char *argv[])
         glClearColor(0.f, 0.f, 0.f, 1.f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        glDrawPixels(width, height, GL_RGBA, GL_UNSIGNED_BYTE, image);
+        glDrawPixels(width, height, GL_RGBA, GL_UNSIGNED_BYTE, image.data());
         glfwSwapBuffers(window);
 
         // fps
